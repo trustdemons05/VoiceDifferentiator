@@ -43,6 +43,12 @@ app.add_middleware(
 )
 
 
+@app.get("/")
+async def root():
+    """Root endpoint for health checks"""
+    return {"status": "ok", "message": "AI Voice Detection API"}
+
+
 @app.middleware("http")
 async def add_timing_header(request: Request, call_next):
     """Add response timing header"""
