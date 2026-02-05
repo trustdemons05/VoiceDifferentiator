@@ -14,6 +14,7 @@ from pydantic import ValidationError
 
 from .schemas import (
     DetectRequest,
+    ExternalTesterRequest,
     DetectResponse,
     HealthResponse,
     ErrorResponse,
@@ -118,6 +119,69 @@ async def detect_voice(
             confidence=result["confidence"],
             explanation=result["explanation"]["key_indicators"]
         )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Detection failed: {str(e)}"
+        )
+    finally:
+        # Cleanup temp file
+        if temp_path and os.path.exists(temp_path):
+            try:
+                os.unlink(temp_path)
+            except OSError:
+                pass
+
+
+@router.post(
+    "/detect-external",
+    response_model=DetectResponse,
+    summary="Detect AI-Generated Voice (External Tester Compatible)",
+    description="Alternative endpoint compatible with external testing tools"
+)
+async def detect_voice_external(
+    request: ExternalTesterRequest
+) -> DetectResponse:
+    """
+    Detect if the provided audio is AI-generated or human.
+    Compatible with external endpoint testers.
+    """
+    temp_path = None
+    
+    try:
+        # Convert external tester format to internal format
+        audio_bytes = base64.b64decode(request.Audio_Base64_Format)
+        
+        if len(audio_bytes) > 10 * 1024 * 1024:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Audio file too large. Maximum size is 10MB."
+            )
+        
+        if len(audio_bytes) < 1000:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Audio file too small. Minimum duration is 1 second."
+            )
+        
+        # Write audio to temporary file
+        with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as f:
+            f.write(audio_bytes)
+            temp_path = f.name
+        
+        # Get language from request
+        language = request.Language.lower()
+        
+        detector = get_detector(language=language)
+        
+        result = detector.detect(temp_path)
+        
+        result["language_detected"] = language
+        
+        return DetectResponse(**result)
         
     except HTTPException:
         raise

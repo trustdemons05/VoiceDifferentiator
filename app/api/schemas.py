@@ -60,6 +60,29 @@ class DetectRequest(BaseModel):
         }
 
 
+class ExternalTesterRequest(BaseModel):
+    """Request schema compatible with external endpoint tester"""
+    Language: str = Field(
+        ...,
+        description="Language code (en, ta, hi, ml, te)",
+        examples=["en"]
+    )
+    Audio_Format: str = Field(
+        default="mp3",
+        description="Audio format (mp3, wav, etc.)",
+        alias="Audio Format"
+    )
+    Audio_Base64_Format: str = Field(
+        ...,
+        description="Base64-encoded audio data",
+        alias="Audio Base64 Format"
+    )
+    
+    class Config:
+        populate_by_name = True
+
+
+
 # ============== Response Schemas ==============
 
 class TechnicalDetails(BaseModel):
