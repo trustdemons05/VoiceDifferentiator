@@ -12,7 +12,7 @@ import sys
 import os
 
 
-API_URL = "http://localhost:8000"
+API_URL = "http://localhost:8001"
 
 
 def encode_audio(file_path: str) -> str:
@@ -73,33 +73,14 @@ def test_detection(audio_path: str, language: str = "en"):
         confidence = result['confidence']
         emoji = "🤖" if classification == "ai_generated" else "👤"
         
-        print(f"\n{emoji} Classification: {classification.upper()}")
-        print(f"   Confidence: {confidence:.1%}")
-        print(f"   AI Probability: {result['ai_probability']:.1%}")
-        print(f"   Human Probability: {result['human_probability']:.1%}")
-        
-        # Detected tool
-        if result.get('ai_tool_detected'):
-            print(f"\n🔍 Detected AI Tool: {result['ai_tool_detected']}")
+        print(f"\nClassification: {classification.upper()}")
+        print(f"Confidence: {confidence:.1%}")
         
         # Explanation
         explanation = result['explanation']
-        print(f"\n📝 Summary: {explanation['summary']}")
-        print(f"   Confidence Level: {explanation['confidence_level']}")
-        
-        # Key indicators
-        print("\n📊 Key Indicators:")
+        print("\nExplanation:")
         for indicator in explanation.get('key_indicators', []):
             print(f"   • {indicator}")
-        
-        # Component results
-        print("\n🎛️  Component Results:")
-        for name, comp in result['component_results'].items():
-            if comp.get('ai_probability') is not None:
-                print(f"   • {name}: {comp['ai_probability']:.1%} AI probability")
-        
-        # Agreement
-        print(f"\n🤝 Detector Agreement: {result['detector_agreement']:.1%}")
         
     else:
         print(f"\n❌ Error: {response.status_code}")

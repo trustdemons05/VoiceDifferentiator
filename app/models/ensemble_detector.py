@@ -183,11 +183,17 @@ class EnsembleVoiceDetector:
         
         # Determine classification
         is_ai = final_ai_prob >= 0.5
-        confidence = abs(final_ai_prob - 0.5) * 2  # Scale to 0-1
         
-        # Adjust confidence based on agreement
+        # Confidence is the probability of the winning class
+        base_confidence = final_ai_prob if is_ai else (1.0 - final_ai_prob)
+        
+        # Boost confidence if detectors agree
         agreement = self._calculate_agreement(results)
-        adjusted_confidence = confidence * (0.5 + 0.5 * agreement)
+        if agreement > 0.8:
+            # Boost towards 1.0
+            confidence = base_confidence + (1.0 - base_confidence) * 0.2
+        else:
+            confidence = base_confidence
         
         # Select top indicators
         unique_indicators = list(dict.fromkeys(all_indicators))[:5]
@@ -198,14 +204,14 @@ class EnsembleVoiceDetector:
         
         return {
             "classification": "ai_generated" if is_ai else "human",
-            "confidence": round(adjusted_confidence, 4),
+            "confidence": round(confidence, 4),
             "ai_probability": round(final_ai_prob, 4),
             "human_probability": round(1 - final_ai_prob, 4),
             "ai_tool_detected": primary_tool,
             "detector_agreement": round(agreement, 4),
             "indicators": unique_indicators,
             "explanation": self._generate_explanation(
-                is_ai, adjusted_confidence, unique_indicators, primary_tool, results
+                is_ai, confidence, unique_indicators, primary_tool, results
             )
         }
     
