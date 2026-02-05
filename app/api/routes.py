@@ -113,9 +113,11 @@ async def detect_voice(
         
         result = detector.detect(temp_path)
         
-        result["language_detected"] = language
-        
-        return DetectResponse(**result)
+        return DetectResponse(
+            classification=result["classification"],
+            confidence=result["confidence"],
+            explanation=result["explanation"]["key_indicators"]
+        )
         
     except HTTPException:
         raise

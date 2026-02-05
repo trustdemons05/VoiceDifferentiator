@@ -51,6 +51,7 @@ class DetectRequest(BaseModel):
     )
     
     class Config:
+        populate_by_name = True
         json_schema_extra = {
             "example": {
                 "audio_url": "https://example.com/sample.mp3",
@@ -127,91 +128,21 @@ class DetectResponse(BaseModel):
         le=1.0,
         description="Confidence score between 0 and 1"
     )
-    ai_probability: float = Field(
+    explanation: List[str] = Field(
         ...,
-        ge=0.0,
-        le=1.0,
-        description="Probability that voice is AI-generated"
-    )
-    human_probability: float = Field(
-        ...,
-        ge=0.0,
-        le=1.0,
-        description="Probability that voice is human"
-    )
-    language_detected: Optional[str] = Field(
-        default=None,
-        description="Detected language of the audio"
-    )
-    ai_tool_detected: Optional[str] = Field(
-        default=None,
-        description="Detected AI voice synthesis tool (if any)"
-    )
-    detector_agreement: float = Field(
-        ...,
-        ge=0.0,
-        le=1.0,
-        description="Agreement score between detection models"
-    )
-    explanation: ExplanationResponse = Field(
-        ...,
-        description="Detailed explanation of the detection result"
-    )
-    component_results: Dict[str, ComponentResult] = Field(
-        ...,
-        description="Individual results from each detection component"
-    )
-    detailed_analysis: DetailedAnalysis = Field(
-        ...,
-        description="Detailed technical analysis"
+        description="List of key indicators explaining the classification"
     )
     
     class Config:
         json_schema_extra = {
             "example": {
                 "classification": "ai_generated",
-                "confidence": 0.92,
-                "ai_probability": 0.92,
-                "human_probability": 0.08,
-                "language_detected": "english",
-                "ai_tool_detected": "NVIDIA PersonaPlex/Riva",
-                "detector_agreement": 1.0,
-                "explanation": {
-                    "summary": "Strong evidence of AI-generated voice detected (likely NVIDIA PersonaPlex/Riva)",
-                    "confidence_level": "high",
-                    "technical_details": {
-                        "spectral_artifacts": ["Vocoder artifacts detected in 6-8kHz band"],
-                        "temporal_patterns": ["Low temporal variation suggesting synthetic generation"],
-                        "synthesis_markers": ["Signature matches NVIDIA PersonaPlex/Riva"]
-                    },
-                    "key_indicators": [
-                        "Signature matches NVIDIA PersonaPlex/Riva (85% confidence)",
-                        "Vocoder artifacts detected in 6-8kHz band"
-                    ],
-                    "model_contributions": {
-                        "wav2vec": 0.45,
-                        "spectrogram": 0.35,
-                        "personaplex": 0.20
-                    }
-                },
-                "component_results": {
-                    "wav2vec": {"classification": "ai_generated", "confidence": 0.88},
-                    "spectrogram": {"classification": "ai_generated", "confidence": 0.91},
-                    "personaplex": {"classification": "ai_generated", "confidence": 0.85}
-                },
-                "detailed_analysis": {
-                    "wav2vec_indicators": ["Deep acoustic patterns suggest synthetic generation"],
-                    "spectrogram_indicators": ["Periodic patterns suggesting neural vocoder"],
-                    "personaplex_indicators": ["Signature matches NVIDIA PersonaPlex/Riva"],
-                    "detected_tools": [
-                        {
-                            "tool_id": "nvidia_personaplex",
-                            "tool_name": "NVIDIA PersonaPlex/Riva",
-                            "confidence": 0.85,
-                            "reasons": ["Phase coherence matches HiFi-GAN pattern"]
-                        }
-                    ]
-                }
+                "confidence": 0.85,
+                "explanation": [
+                    "Unusually smooth spectral distribution typical of neural vocoders",
+                    "Low temporal variation suggesting synthetic generation",
+                    "Periodic patterns suggesting neural vocoder"
+                ]
             }
         }
 
