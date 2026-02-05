@@ -24,3 +24,9 @@ Thumbs.db
 *.mp3
 *.wav
 *.log
+
+# Sensitive
+config.yml
+*.json
+credentials-file.json
+/weights/
