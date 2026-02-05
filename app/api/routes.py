@@ -88,14 +88,10 @@ async def detect_voice(
                 detail="Either 'audio_url' or 'audio_base64' must be provided."
             )
             
-            )
-            
         if len(audio_bytes) > 10 * 1024 * 1024:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Audio file too large. Maximum size is 10MB."
-            )
-        
             )
         
         if len(audio_bytes) < 1000:
@@ -104,13 +100,16 @@ async def detect_voice(
                 detail="Audio file too small. Minimum duration is 1 second."
             )
         
-            )
-        
+        # Write audio to temporary file
         with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as f:
             f.write(audio_bytes)
             temp_path = f.name
         
+        # Get language from request or default to English
+        language = request.language_hint.value if request.language_hint else "en"
+        
         detector = get_detector(language=language)
+
         
         result = detector.detect(temp_path)
         
