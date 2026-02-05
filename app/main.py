@@ -42,6 +42,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Increase max request body size (50MB for audio files)
+from starlette.middleware.base import BaseHTTPMiddleware
+
+class MaxBodySizeMiddleware(BaseHTTPMiddleware):
+    def __init__(self, app, max_body_size: int = 50 * 1024 * 1024):
+        super().__init__(app)
+        self.max_body_size = max_body_size
+
+app.add_middleware(MaxBodySizeMiddleware)
+
 
 @app.get("/")
 async def root():
