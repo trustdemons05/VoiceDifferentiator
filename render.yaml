@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: voice-detection-api
+    env: python
+    plan: free  # Change to 'starter' for always-on service
+    buildCommand: pip install -r requirements.txt
+    startCommand: python run.py --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: PORT
+        generateValue: true  # Render will auto-assign
+    healthCheckPath: /api/v1/health
